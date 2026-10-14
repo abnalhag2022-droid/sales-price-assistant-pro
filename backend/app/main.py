@@ -2,17 +2,23 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import os
 from dotenv import load_dotenv
-from app.api.v1 import api_router
-from app.config import settings
+from database import Base, engine
+from api.v1 import api_router
+from config import settings
 
 # تحميل متغيرات البيئة
 load_dotenv()
+
+# إنشاء الجداول
+Base.metadata.create_all(bind=engine)
 
 # إنشاء التطبيق
 app = FastAPI(
     title=settings.APP_NAME,
     description="نظام مساعد المبيعات والأسعار",
-    version=settings.APP_VERSION
+    version=settings.APP_VERSION,
+    docs_url="/docs",
+    redoc_url="/redoc"
 )
 
 # CORS Configuration
@@ -30,7 +36,11 @@ app.include_router(api_router)
 # Health Check
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy", "message": "Backend is running"}
+    return {
+        "status": "healthy",
+        "message": "Backend is running",
+        "app": settings.APP_NAME
+    }
 
 @app.get("/")
 async def root():

@@ -1,44 +1,72 @@
-from fastapi import APIRouter, Query
-from typing import List
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy.orm import Session
+from database import get_db
+from models import Item
+from pydantic import BaseModel
+from typing import List, Optional
 
 router = APIRouter(prefix="/items", tags=["items"])
 
-# بيانات تجريبية
-DEMO_ITEMS = [
-    {"id": 1, "code": "ITEM001", "name_ar": "صنف 1", "price": 100},
-    {"id": 2, "code": "ITEM002", "name_ar": "صنف 2", "price": 200},
-    {"id": 3, "code": "ITEM003", "name_ar": "صنف 3", "price": 300},
-]
+class ItemCreate(BaseModel):
+    code: str
+    name_ar: str
+    name_en: Optional[str] = None
+    base_price: float
+    category: Optional[str] = None
 
-@router.get("/")
-async def get_items(q: str = Query(None)):
+class ItemResponse(BaseModel):
+    id: str
+    code: str
+    name_ar: str
+    base_price: float
+    stock: float
+
+    class Config:
+        from_attributes = True
+
+@router.get("/", response_model=List[ItemResponse])
+async def get_items(q: str = Query(None), db: Session = Depends(get_db)):
     """
     الحصول على قائمة الأصناف
     """
+    query = db.query(Item)
+    
     if q:
-        return [item for item in DEMO_ITEMS if q.lower() in item["name_ar"].lower()]
-    return DEMO_ITEMS
+        query = query.filter(Item.name_ar.ilike(f"%{q}%"))
+    
+    return query.all()
 
-@router.get("/{item_code}")
-async def get_item(item_code: str):
+@router.get("/{item_code}", response_model=ItemResponse)
+async def get_item(item_code: str, db: Session = Depends(get_db)):
     """
     الحصول على صنف محدد
     """
-    for item in DEMO_ITEMS:
-        if item["code"] == item_code:
-            return item
-    return {"error": "Item not found"}
+    item = db.query(Item).filter(Item.code == item_code).first()
+    
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    
+    return ItemResponse.from_orm(item)
 
-@router.post("/")
-async def create_item(code: str, name_ar: str, price: float):
+@router.post("/", response_model=ItemResponse)
+async def create_item(item: ItemCreate, db: Session = Depends(get_db)):
     """
     إنشاء صنف جديد
     """
-    new_item = {
-        "id": len(DEMO_ITEMS) + 1,
-        "code": code,
-        "name_ar": name_ar,
-        "price": price
-    }
-    DEMO_ITEMS.append(new_item)
-    return new_item
+    # التحقق من عدم وجود الكود
+    if db.query(Item).filter(Item.code == item.code).first():
+        raise HTTPException(status_code=400, detail="Item code already exists")
+    
+    new_item = Item(
+        code=item.code,
+        name_ar=item.name_ar,
+        name_en=item.name_en,
+        base_price=item.base_price,
+        category=item.category
+    )
+    
+    db.add(new_item)
+    db.commit()
+    db.refresh(new_item)
+    
+    return ItemResponse.from_orm(new_item)
