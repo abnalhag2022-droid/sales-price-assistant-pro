@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import '../services/index.dart';
 import '../models/index.dart';
 import 'sales_screen.dart';
+import 'inquiry_screen.dart';
+import 'session_history_screen.dart';
+import 'pending_sessions_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -112,26 +115,35 @@ class _HomeScreenState extends State<HomeScreen> {
                   title: 'استعلام السعر',
                   icon: Icons.search,
                   onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('قريباً')),
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const InquiryScreen(),
+                      ),
                     );
                   },
                 ),
                 _MenuCard(
-                  title: 'السجل',
+                  title: 'معاملات معلقة',
+                  icon: Icons.pause_circle,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const PendingSessionsScreen(),
+                      ),
+                    );
+                  },
+                ),
+                _MenuCard(
+                  title: 'سجل المعاملات',
                   icon: Icons.history,
                   onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('قريباً')),
-                    );
-                  },
-                ),
-                _MenuCard(
-                  title: 'التقارير',
-                  icon: Icons.bar_chart,
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('قريباً')),
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const SessionHistoryScreen(),
+                      ),
                     );
                   },
                 ),
