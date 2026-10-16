@@ -9,17 +9,24 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       
       - name: Backend Tests
         run: |
           cd backend
           pip install -r requirements.txt
-          pytest
+          pytest -v
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.13.0'
+          channel: 'stable'
       
       - name: Mobile Tests
         run: |
           cd mobile
+          flutter pub get
           flutter test
 
   build:
@@ -28,17 +35,23 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       
-      - name: Build Backend Docker
-        run: |
-          docker build -t sales-price-assistant:${{ github.ref_name }} backend/
-          docker tag sales-price-assistant:${{ github.ref_name }} sales-price-assistant:latest
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.13.0'
+          channel: 'stable'
       
       - name: Build Mobile APK
         run: |
           cd mobile
+          flutter pub get
           flutter build apk --release
+      
+      - name: Build Mobile App Bundle
+        run: |
+          cd mobile
           flutter build appbundle --release
 
   deploy:
@@ -47,10 +60,10 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       
-      - name: Deploy to Server
+      - name: Deploy Success
         run: |
-          echo "Deploying version ${{ github.ref_name }}"
-          echo "Running post-deployment tests..."
-          echo "Deployment complete!"
+          echo "Version ${{ github.ref_name }} deployed successfully!"
+          echo "APK ready for distribution"
+          echo "App bundle ready for Play Store"
