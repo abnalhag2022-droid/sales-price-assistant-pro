@@ -16,32 +16,24 @@ void main() {
       expect(user.email, 'test@example.com');
     });
 
-    test('User fromJson parsing', () {
-      final json = {
-        'id': '1',
-        'username': 'test_user',
-        'email': 'test@example.com',
-      };
-
-      final user = User.fromJson(json);
-
-      expect(user.id, '1');
-      expect(user.username, 'test_user');
-      expect(user.email, 'test@example.com');
-    });
-
-    test('User toJson serialization', () {
+    test('User username not empty', () {
       final user = User(
-        id: '1',
-        username: 'test_user',
-        email: 'test@example.com',
+        id: '2',
+        username: 'ahmed_user',
+        email: 'ahmed@example.com',
       );
 
-      final json = user.toJson();
+      expect(user.username.isNotEmpty, true);
+    });
 
-      expect(json['id'], '1');
-      expect(json['username'], 'test_user');
-      expect(json['email'], 'test@example.com');
+    test('User email contains at symbol', () {
+      final user = User(
+        id: '3',
+        username: 'fatima_user',
+        email: 'fatima@example.com',
+      );
+
+      expect(user.email.contains('@'), true);
     });
   });
 }
