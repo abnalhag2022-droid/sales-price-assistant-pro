@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/index.dart';
 import '../models/index.dart';
+import 'sales_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -11,13 +12,11 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late Future<User> _userFuture;
-  late Future<List<Item>> _itemsFuture;
 
   @override
   void initState() {
     super.initState();
     _userFuture = ApiService.getCurrentUser();
-    _itemsFuture = ApiService.getItems();
   }
 
   Future<void> _handleLogout() async {
@@ -83,46 +82,93 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 24),
             const Text(
-              'قائمة الأصناف',
+              'الخيارات الرئيسية',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 12),
-            FutureBuilder<List<Item>>(
-              future: _itemsFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                if (snapshot.hasError) {
-                  return Text('خطأ: ${snapshot.error}');
-                }
-
-                final items = snapshot.data ?? [];
-                if (items.isEmpty) {
-                  return const Text('لا توجد أصناف');
-                }
-
-                return ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: items.length,
-                  itemBuilder: (context, index) {
-                    final item = items[index];
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      child: ListTile(
-                        title: Text(item.nameAr),
-                        subtitle: Text('الكود: ${item.code}'),
-                        trailing: Text('${item.basePrice} ر.س'),
+            const SizedBox(height: 16),
+            GridView.count(
+              crossAxisCount: 2,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+              children: [
+                _MenuCard(
+                  title: 'نقاط البيع',
+                  icon: Icons.shopping_cart,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const SalesScreen(),
                       ),
                     );
                   },
-                );
-              },
+                ),
+                _MenuCard(
+                  title: 'استعلام السعر',
+                  icon: Icons.search,
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('قريباً')),
+                    );
+                  },
+                ),
+                _MenuCard(
+                  title: 'السجل',
+                  icon: Icons.history,
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('قريباً')),
+                    );
+                  },
+                ),
+                _MenuCard(
+                  title: 'التقارير',
+                  icon: Icons.bar_chart,
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('قريباً')),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MenuCard extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  const _MenuCard({
+    required this.title,
+    required this.icon,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Card(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 48, color: Colors.blue),
+            const SizedBox(height: 12),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
           ],
         ),
