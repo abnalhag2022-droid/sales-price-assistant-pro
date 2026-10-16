@@ -2,55 +2,112 @@ name: Deploy Pipeline
 
 on:
   push:
-    branches: [ main ]
-    tags: [ 'v*' ]
+    branches: [main]
+    tags: ['v*']
+
+permissions:
+  contents: read
 
 jobs:
   test:
+    name: Test Backend and Mobile
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v2
-      
-      - name: Backend Tests
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install Backend Dependencies
+        working-directory: backend
         run: |
-          cd backend
+          python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pytest
-      
-      - name: Mobile Tests
-        run: |
-          cd mobile
-          flutter test
+
+      - name: Run Backend Tests
+        working-directory: backend
+        run: python -m pytest
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install Mobile Dependencies
+        working-directory: mobile
+        run: flutter pub get
+
+      - name: Run Mobile Tests
+        working-directory: mobile
+        run: flutter test
 
   build:
+    name: Build Release Artifacts
     needs: test
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
-    
+
     steps:
-      - uses: actions/checkout@v2
-      
-      - name: Build Backend Docker
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install Mobile Dependencies
+        working-directory: mobile
+        run: flutter pub get
+
+      - name: Build Backend Docker Image
         run: |
-          docker build -t sales-price-assistant:${{ github.ref_name }} backend/
-          docker tag sales-price-assistant:${{ github.ref_name }} sales-price-assistant:latest
-      
-      - name: Build Mobile APK
-        run: |
-          cd mobile
-          flutter build apk --release
-          flutter build appbundle --release
+          docker build \
+            -t sales-price-assistant:${{ github.ref_name }} \
+            -t sales-price-assistant:latest \
+            backend/
+
+      - name: Build Android APK
+        working-directory: mobile
+        run: flutter build apk --release
+
+      - name: Build Android App Bundle
+        working-directory: mobile
+        run: flutter build appbundle --release
+
+      - name: Upload Android Release Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-release-${{ github.ref_name }}
+          path: |
+            mobile/build/app/outputs/flutter-apk/*.apk
+            mobile/build/app/outputs/bundle/release/*.aab
+          if-no-files-found: error
+          retention-days: 30
 
   deploy:
+    name: Deployment Status
     needs: build
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
-    
+
     steps:
-      - uses: actions/checkout@v2
-      
-      - name: Deploy to Server
+      - name: Report Deployment Status
         run: |
-          echo "Deploying version ${{ github.ref_name }}"
-          echo "Running post-deployment tests..."
-          echo "Deployment complete!"
+          echo "Release version: ${{ github.ref_name }}"
+          echo "Tests and release builds completed successfully."
+          echo "Android artifacts have been uploaded to GitHub Actions."
+          echo "Server deployment is not configured in this workflow."
