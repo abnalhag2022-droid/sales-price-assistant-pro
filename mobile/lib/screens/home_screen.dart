@@ -5,6 +5,9 @@ import 'sales_screen.dart';
 import 'inquiry_screen.dart';
 import 'session_history_screen.dart';
 import 'pending_sessions_screen.dart';
+import 'admin_dashboard_screen.dart';
+import 'user_management_screen.dart';
+import 'audit_log_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -15,6 +18,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late Future<User> _userFuture;
+  bool _isAdmin = true; // تم تحديده للاختبار
 
   @override
   void initState() {
@@ -38,6 +42,19 @@ class _HomeScreenState extends State<HomeScreen> {
         title: const Text('الرئيسية'),
         centerTitle: true,
         actions: [
+          if (_isAdmin)
+            IconButton(
+              icon: const Icon(Icons.admin_panel_settings),
+              tooltip: 'لوحة التحكم',
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AdminDashboardScreen(),
+                  ),
+                );
+              },
+            ),
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: _handleLogout,
@@ -77,6 +94,26 @@ class _HomeScreenState extends State<HomeScreen> {
                         const SizedBox(height: 8),
                         Text('المستخدم: ${user?.username}'),
                         Text('البريد الإلكتروني: ${user?.email}'),
+                        if (_isAdmin)
+                          Container(
+                            margin: const EdgeInsets.only(top: 8),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.red[100],
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: const Text(
+                              'مسؤول النظام',
+                              style: TextStyle(
+                                color: Colors.red,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
                       ],
                     ),
                   ),
@@ -149,6 +186,64 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ],
             ),
+            if (_isAdmin) ...[
+              const SizedBox(height: 32),
+              const Text(
+                'خيارات الإدارة',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              GridView.count(
+                crossAxisCount: 2,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                children: [
+                  _MenuCard(
+                    title: 'لوحة التحكم',
+                    icon: Icons.dashboard,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              const AdminDashboardScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  _MenuCard(
+                    title: 'إدارة المستخدمين',
+                    icon: Icons.people,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              const UserManagementScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  _MenuCard(
+                    title: 'سجل التدقيق',
+                    icon: Icons.list,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const AuditLogScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ],
           ],
         ),
       ),

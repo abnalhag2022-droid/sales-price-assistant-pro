@@ -6,3 +6,6 @@ export 'sales_screen.dart';
 export 'inquiry_screen.dart';
 export 'session_history_screen.dart';
 export 'pending_sessions_screen.dart';
+export 'admin_dashboard_screen.dart';
+export 'user_management_screen.dart';
+export 'audit_log_screen.dart';
