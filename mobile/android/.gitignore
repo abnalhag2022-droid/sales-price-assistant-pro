@@ -2,8 +2,8 @@
 *.keystore
 *.p12
 key.properties
-/local.properties
-gradle-wrapper.jar
-/.gradle
+local.properties
+/gradle-wrapper.jar
+/.gradle/
 /captures/
 GeneratedPluginRegistrant.java
