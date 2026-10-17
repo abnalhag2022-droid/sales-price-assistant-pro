@@ -4,13 +4,13 @@ import 'services/index.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // التحقق من وجود توكن
   final token = await StorageService().getToken();
   if (token != null) {
     ApiService.setAuthToken(token);
   }
-  
+
   runApp(const MyApp());
 }
 
