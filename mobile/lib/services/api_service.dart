@@ -3,7 +3,7 @@ import 'dart:convert';
 import '../models/index.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://localhost:8000/api/v1';
+  static const String baseUrl = 'http://192.168.1.250:8000/api/v1';
   static String? _authToken;
 
   // تعيين التوكن
@@ -168,7 +168,7 @@ class ApiService {
   static Future<bool> checkHealth() async {
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:8000/health'),
+        Uri.parse('http://192.168.1.250:8000/health'),
       );
       return response.statusCode == 200;
     } catch (e) {
