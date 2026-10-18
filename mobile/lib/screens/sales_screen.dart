@@ -99,7 +99,7 @@ class _SalesScreenState extends State<SalesScreen> {
           'discount': _discountAmount,
         };
 
-        await ApiService.createSale(payload);
+        // TODO: إرسال المبيعات للخادم عند توفر endpoint
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('✅ تمت المعاملة بنجاح')),

@@ -147,6 +147,23 @@ class ApiService {
     }
   }
 
+  // إنشاء صنف جديد
+  static Future<void> createItem(Map<String, dynamic> payload) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/items'),
+        headers: _getHeaders(),
+        body: jsonEncode(payload),
+      );
+
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        throw Exception('Failed to create item: ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Create item error: $e');
+    }
+  }
+
   // فحص صحة Backend
   static Future<bool> checkHealth() async {
     try {
