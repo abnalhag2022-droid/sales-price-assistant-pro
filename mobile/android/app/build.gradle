@@ -14,7 +14,7 @@ if (localPropertiesFile.exists()) {
 
 def flutterRoot = localProperties.getProperty('flutter.sdk')
 if (flutterRoot == null) {
-    throw new GradleException("Flutter SDK not found. Define location with flutter.sdk in the local.properties file.")
+    throw new GradleException("Flutter SDK not found")
 }
 
 def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
@@ -30,10 +30,6 @@ if (flutterVersionName == null) {
 android {
     namespace "com.abnalhag.sales_price_assistant"
     compileSdkVersion 34
-
-    sourceSets {
-        main.java.srcDirs += 'src/main/kotlin'
-    }
 
     defaultConfig {
         applicationId "com.abnalhag.sales_price_assistant"
@@ -61,8 +57,4 @@ android {
 
 flutter {
     source '../..'
-}
-
-dependencies {
-    implementation "androidx.core:core:1.10.1"
 }
